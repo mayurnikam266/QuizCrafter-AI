@@ -1,0 +1,7 @@
+streamlit==1.25.0
+langchain
+langchain-groq
+langchain-core
+jsonschema==4.19.0
+python-dotenv==1.0.0
+pydantic==2.10.0
