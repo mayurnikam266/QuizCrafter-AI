@@ -50,7 +50,7 @@ def generate_mcqs(subject, topic, difficulty):
         return []
 
 # Streamlit interface
-st.title("QuizCraft AI ")
+st.title("QuizCrafter AI ")
 
 # Step 1: Input the subject, topic, and difficulty level
 subject = st.text_input("Enter the subject for the quiz:", placeholder="e.g., Python programming")
