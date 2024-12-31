@@ -1,9 +1,9 @@
 # QuizCrafter AI
 
-This is a Streamlit-based application that dynamically generates multiple-choice quizzes using the Groq API and LangChain. Users can input their subject, topic, and difficulty level to create quizzes instantly.
+This is a Streamlit-based application that dynamically generates multiple-choice quizzes using the Groq API of Meta llama3 and LangChain. Users can input their subject, topic, and difficulty level to create quizzes instantly.
 
 ---
-
+## Try it on huggingface : https://huggingface.co/spaces/mayurnikam/QuizCrafter_AI
 ## Features
 
 - Generate multiple-choice questions (MCQs) dynamically.
