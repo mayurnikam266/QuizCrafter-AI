@@ -1,3 +1,4 @@
+import re
 import streamlit as st
 from langchain.prompts import PromptTemplate
 from langchain_groq import ChatGroq
@@ -7,7 +8,7 @@ import json
 import os
 import time
 
-# Initialize LangChain model with groq api
+# Initialize LangChain model with groq API
 load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")
 
@@ -18,13 +19,18 @@ if not api_key:
 
 llm = ChatGroq(temperature=0, model_name="llama3-8b-8192", api_key=api_key)
 
-# Function to parse JSON response from Groq API
+# Function to parse and extract JSON response
 def parse_response_to_json(response):
     try:
-        output_parser = JsonOutputParser()
-        return output_parser.parse(response)
-    except json.JSONDecodeError:
-        st.error("Failed to parse response into JSON. Please try again.")
+        # Extract the JSON part from the response using regex
+        json_match = re.search(r"\[.*\]", response, re.DOTALL)
+        if not json_match:
+            raise ValueError("No valid JSON found in response.")
+        
+        json_data = json_match.group(0)  # Extract matched JSON
+        return json.loads(json_data)    # Parse JSON string into Python object
+    except (ValueError, json.JSONDecodeError) as e:
+        st.error(f"Failed to parse JSON: {e}")
         return []
 
 # Define a function to generate unique MCQs
@@ -35,7 +41,7 @@ def generate_mcqs(subject, topic, difficulty):
             "at a '{difficulty}' difficulty level. Ensure that each question is different from previous ones. "
             "Provide four options for each question, clearly mark the correct option, and return the output in "
             "JSON format like this:\n"
-            "[{{'question': '...', 'options': ['a', 'b', 'c', 'd'], 'correct_option': '...'}}, ...]"
+            "[{{'question': '...', 'options': ['a: Option 1', 'b: Option 2', 'c: Option 3', 'd: Option 4'], 'correct_option': 'a'}}]"
         ),
         input_variables=["subject", "topic", "difficulty"],
     )
@@ -50,7 +56,7 @@ def generate_mcqs(subject, topic, difficulty):
         return []
 
 # Streamlit interface
-st.title("QuizCrafter AI ")
+st.title("QuizCrafter AI")
 
 # Step 1: Input the subject, topic, and difficulty level
 subject = st.text_input("Enter the subject for the quiz:", placeholder="e.g., Python programming")
@@ -86,22 +92,22 @@ if "questions" in st.session_state:
         # Display response and load the next question with a delay
         if st.button("Submit"):
             if user_answer:
-                # Improved comparison: Strip spaces and compare case-insensitively
+                # Compare only the identifiers (a, b, c, d) for the correct option
                 correct_option = question["correct_option"].strip().lower()
-                user_answer = user_answer.strip().lower()
+                user_answer = user_answer[0].strip().lower()  # Extract the first character (identifier)
 
                 if user_answer == correct_option:
                     st.success("✅ Correct!")
                     st.session_state["score"] += 1
                 else:
-                    st.error(f"❌ Incorrect. The correct answer is: {question['correct_option']}")
+                    st.error(f"❌ Incorrect. The correct answer is: {correct_option.upper()}")
 
                 # Delay before moving to the next question
-                time.sleep(2)
+                time.sleep(1.5)
 
                 # Move to the next question
                 st.session_state["current_question"] += 1
-                st.rerun()  # Use st.rerun() instead of st.experimental_rerun()
+                st.experimental_rerun()  # Use st.rerun() instead of st.experimental_rerun()
             else:
                 st.warning("Please select an answer before submitting.")
     else:
